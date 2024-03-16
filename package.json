@@ -1,11 +1,12 @@
 {
 	"name": "obsidian-sample-plugin",
-	"version": "1.0.0",
+	"version": "0.0.0",
 	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+		"bundle": "yarn build && cp main.js manifest.json styles.css versions.json dist/index-generator && mkdir -p dist/index-generator && cd dist/ && zip -r index-generator.zip index-generator",
 		"version": "node version-bump.mjs && git add manifest.json versions.json"
 	},
 	"keywords": [],
