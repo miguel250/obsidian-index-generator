@@ -14,12 +14,14 @@ interface PluginSettings {
 	rootIndexName: string;
 	excludeDirectories: string;
 	indexTemplate: string;
+	rootTemplate: string;
 }
 
 const DEFAULT_SETTINGS: PluginSettings = {
 	rootIndexName: "",
 	excludeDirectories: "",
 	indexTemplate: "",
+	rootTemplate: "",
 };
 
 export default class MyPlugin extends Plugin {
@@ -89,8 +91,9 @@ export default class MyPlugin extends Plugin {
 			}
 		}
 
+		const isRoot = parent.isRoot();
 		let parentName = this.settings.rootIndexName;
-		if (parentName === "" || !parent.isRoot()) {
+		if (parentName === "" || !isRoot) {
 			parentName =
 				parent.name != "" ? parent.name : this.app.vault.getName();
 		}
@@ -99,10 +102,26 @@ export default class MyPlugin extends Plugin {
 			return;
 		}
 
-		let templateContent = "{{content}}\n";
+		let useTemplateFile = false;
+		let templateFileName = "";
 		if (this.settings.indexTemplate !== "") {
+			templateFileName = normalizePath(
+				`${this.settings.indexTemplate}.md`
+			);
+			useTemplateFile = true;
+		}
+
+		if (isRoot && this.settings.rootTemplate !== "") {
+			templateFileName = normalizePath(
+				`${this.settings.rootTemplate}.md`
+			);
+			useTemplateFile = true;
+		}
+
+		let templateContent = "{{content}}\n";
+		if (useTemplateFile) {
 			const templateFile = this.app.metadataCache.getFirstLinkpathDest(
-				normalizePath(`${this.settings.indexTemplate}.md`),
+				templateFileName,
 				""
 			);
 
@@ -222,6 +241,19 @@ class IndexGeneratorSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.rootIndexName)
 					.onChange(async (value) => {
 						this.plugin.settings.rootIndexName = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Root file template")
+			.setDesc("Template file to use for the root of vault index.")
+			.addText((text) =>
+				text
+					.setPlaceholder("")
+					.setValue(this.plugin.settings.rootTemplate)
+					.onChange(async (value) => {
+						this.plugin.settings.rootTemplate = value;
 						await this.plugin.saveSettings();
 					})
 			);
