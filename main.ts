@@ -184,7 +184,7 @@ export default class MyPlugin extends Plugin {
 		const indexFilePath = normalizePath(`${parent.path}/${parentName}.md`);
 		const indexFile = this.app.metadataCache.getFirstLinkpathDest(
 			indexFilePath,
-			""
+			indexFilePath
 		);
 
 		if (indexFile === null && links.length > 0) {
